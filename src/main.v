@@ -30,7 +30,7 @@ fn scene_test() !{
 // render the main scene
 fn main() {
 	// test the vector stuff
-	w, h := 200, 100
+	w, h := 900, 900
 	bg_color := Color{0, 0, 0}
 
 	// initialise scene
@@ -40,6 +40,12 @@ fn main() {
 	// make it have a list of objects
 	// Object is an interface with a check_intersection function
 	// Make it have light and stuff
+	my_sphere := Sphere{
+		center: Vec{0, 0, 3},
+		radius: 1.0
+	}
+
+	s.add_object(my_sphere)
 
 
 	s.render("./out.ppm", w, h)!

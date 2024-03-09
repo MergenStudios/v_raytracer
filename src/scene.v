@@ -9,75 +9,148 @@ struct Color {
 		b u8
 }
 
+// Camera + Viewport in one struct
+// pos, vocal length, height (width is claculated from img dimensions)
+// 
+
 struct Camera {
 	mut:
-		pos Vec
-		focal_lenght f64 = 1.0
-		viewport_height f64 = 2.0 // todo: figure out what effect this has later
+		pos Vec					// usually 0|0|0
+		focal_length f64		// usually 1.0
+		viewport_height f64		// usually 2.0
+		viewport_width f64		// calculated from height based on img w and h
+		pixel_delta_v f64		// calculated from viewport height
+		pixel_delta_h f64		// calculated from viewport width
+		top_left_pixel Vec		// calculated from all the above
 }
 
-//todo: make it more clear what v1 and v2 are
-struct Viewport {
-	horizontal_vec Vec
-	vertical_vec Vec
-}
-
+// must have 
+// bg color, list of objects
+// camera
 struct Scene {
 	bg_color Color
-	cam Camera
-	port Viewport
+	mut:
+		cam Camera
+		hittable_objects []HittableObject
 }
+
+
 
 // make this do more of the work for me
 fn init_scene(bg_color Color) Scene {
-	cam := Camera{pos: Vec{0, 0, 0}}
-	port := Viewport{Vec{1, 0, 0}, Vec{0, -cam.viewport_height, 0}}
-
-	
-	
-	
-	
+	// setup scene with default values
+	cam := Camera{
+		pos: Vec{0, 0, 0},
+		focal_length: 1.0,
+		viewport_height: 2.0
+	} // sane defaults
 	
 	return Scene {
 		bg_color: bg_color
 		cam: cam
-		port: port
+		hittable_objects: []HittableObject{}
 	}
 }
 
-fn (s Scene) render(path string, w int, h int) !{
+// sets up a cam using w and h
+fn setup_cam(w int, h int) Camera {
+	pos := Vec{0, 0, 0}
+	
+	// calculate Viewport width
+	// ratio between w and h
+	aspect_ratio := f64(w) / f64(h)
+
+	focal_length := 1.0
+
+	// viewport_width is viewport_height multiplied by aspect_ratio
+	viewport_height := 2.0
+	viewport_width := viewport_height * aspect_ratio
+
+	pixel_delta_v := viewport_height / f64(h) // pixel_delta_v (vertical) is viewport_height scaled by 1/h
+	pixel_delta_h := viewport_width / f64(w) // pixel_delta_h (horizontal) is viewport_width scaled by 1/w
+
+	on_z := pos + Vec{0, 0, focal_length}
+	top_left_corner := on_z - Vec{viewport_width, 0, 0}.scale(.5) + Vec{0, viewport_height, 0}.scale(.5)
+	top_left_pixel := top_left_corner + Vec{pixel_delta_h, 0, 0}.scale(.5) + Vec{0, -pixel_delta_v, 0}.scale(.5)
+	
+	
+	println("aspect ratio ${aspect_ratio}")
+	println("viewport width ${viewport_width}")
+
+	println("pixel delta v ${pixel_delta_v}")
+	println("pixel delta h ${pixel_delta_h}")
+
+	println("on_z ${on_z}")
+	println("top_left_corner ${top_left_corner}")
+	println("top_left_pixel ${top_left_pixel}")
+	
+
+	return Camera{
+		pos: pos,
+		focal_length: focal_length,
+		viewport_height: viewport_height,
+		viewport_width: viewport_width,
+		pixel_delta_v: pixel_delta_v,
+		pixel_delta_h: pixel_delta_h,
+		top_left_pixel: top_left_pixel
+	}
+}
+
+fn (mut s Scene) render(path string, w int, h int) !{
+	s.cam = setup_cam(w, h)
+	
 	// setup the data
-	mut data := [][]Color{len: h, init: []Color{len: w}}
+	mut data := [][]Color{len: w, init: []Color{len: h}}
+
+	println(s)
+	
 
 	// setup pixel_delta_horizontal and pixel_delta_vertical
-	pixel_delta_horizontal := s.port.horizontal_vec.scale(1.0/f64(w))
-	pixel_delta_vertical := s.port.vertical_vec.scale(1.0/f64(h))
-
-	// viewport upper left
-	port_first_pixel := s.cam.pos - Vec{0, 0, s.cam.focal_lenght} - s.port.horizontal_vec.scale(.5) - s.port.vertical_vec.scale(.5) + pixel_delta_horizontal.scale(.5) + pixel_delta_vertical.scale(.5)
-	
 	mut f := os.open_file(path, "w")!
 	
 	f.write_string("P3\n${w} ${h}\n${255}\n")!
 
 	// write the ppm file
 	// iterate over all pixels ()
-	for x in 0 .. w {
+	for y in 0 .. h {
 		// print the progress
 		print("\r")
-		print("${x+1}/${w} lines")
-		for y in 0 .. h {
-			r := Ray{s.cam.pos, port_first_pixel + pixel_delta_horizontal.scale(x) + pixel_delta_vertical.scale(y)}
+		print("${y+1}/${h} lines")
+		for x in 0 .. w {
+			// println("Processing pixel ${x}|${y}")
+			mut pixel := Color{}
 
+			// construct ray from cam through pixel
+			pixel_center := s.cam.top_left_pixel + Vec{s.cam.pixel_delta_h, 0, 0}.scale(x) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(y)
+			r := Ray{s.cam.pos, pixel_center}
+
+			// iterate through all objects
+			for obj in s.hittable_objects {
+				// check if the ray hits the object
+				check := obj.check_hit(r)
+
+				// red if hit, 
+				if check {
+					pixel = Color{255, 0, 0}
+				} else {
+					pixel = s.bg_color
+				}
+			}
 		
+			data[x][y] = pixel
+
 			// write ppm file 
-			pixel := s.bg_color
 			f.write_string("${pixel.r} ${pixel.g} ${pixel.b}\n")!
 		}
 	}
 	
-
+	// println(data)
 	// f.write_string("./out.ppm")!
 
 	f.close()
+}
+
+
+fn (mut s Scene) add_object(obj HittableObject) {
+	s.hittable_objects << obj
 }
