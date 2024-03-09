@@ -41,7 +41,7 @@ fn main() {
 	// Object is an interface with a check_intersection function
 	// Make it have light and stuff
 	my_sphere := Sphere{
-		center: Vec{0, 0, 3},
+		center: Vec{0, 0, 5},
 		radius: 1.0
 	}
 
