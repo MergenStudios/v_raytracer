@@ -98,9 +98,6 @@ fn setup_cam(w int, h int) Camera {
 
 fn (mut s Scene) render(path string, w int, h int) !{
 	s.cam = setup_cam(w, h)
-	
-	// setup the data
-	mut data := [][]Color{len: w, init: []Color{len: h}}
 
 	println(s)
 	
@@ -117,27 +114,16 @@ fn (mut s Scene) render(path string, w int, h int) !{
 		print("\r")
 		print("${y+1}/${h} lines")
 		for x in 0 .. w {
-			// println("Processing pixel ${x}|${y}")
-			mut pixel := Color{}
 
 			// construct ray from cam through pixel
 			pixel_center := s.cam.top_left_pixel + Vec{s.cam.pixel_delta_h, 0, 0}.scale(x) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(y)
-			r := Ray{s.cam.pos, pixel_center}
+			r := Ray{s.cam.pos, pixel_center} 
 
-			// iterate through all objects
-			for obj in s.hittable_objects {
-				// check if the ray hits the object
-				check := obj.check_hit(r)
+			// the following code runs for all rays in my scene
 
-				// red if hit, 
-				if check {
-					pixel = Color{255, 0, 0}
-				} else {
-					pixel = s.bg_color
-				}
-			}
-		
-			data[x][y] = pixel
+
+			// call s.trace_ray with the 
+			pixel := s.trace_ray(r)
 
 			// write ppm file 
 			f.write_string("${pixel.r} ${pixel.g} ${pixel.b}\n")!
@@ -150,6 +136,20 @@ fn (mut s Scene) render(path string, w int, h int) !{
 	f.close()
 }
 
+fn (s Scene) trace_ray(r Ray) Color {
+	check, intersection := r.nearest_intersection(s.hittable_objects)
+
+	// something was hit
+	if check {
+		// call calculate_lighting
+		println(intersection)
+
+
+		return Color{255, 0, 0}
+	} else { // nothing was hit, ray is background color
+		return s.bg_color
+	}
+}
 
 fn (mut s Scene) add_object(obj HittableObject) {
 	s.hittable_objects << obj
