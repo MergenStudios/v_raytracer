@@ -25,18 +25,20 @@ fn (r Ray) at(t f64) Vec {
 }
 
 fn (r Ray) nearest_intersection(hittable_objects []HittableObject) (bool, Intersection) {
-	mut nearest_intersection := Intersection{
-		t: 1000000.0
-	}
+	mut nearest_intersection := Intersection{}
 	mut intersected := false
 	
 	for obj in hittable_objects {
 		check, intersection := obj.check_hit(r)
 
 		if check {
-			if intersection.t < nearest_intersection.t {
+			if intersected == false { // ik this is stupid shut up
 				nearest_intersection = intersection
 				intersected = true
+			} else if intersected == true { // same thing as above
+				if intersection.t < nearest_intersection.t {
+					nearest_intersection = intersection
+				}
 			}
 		}
 	}
