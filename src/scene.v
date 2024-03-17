@@ -108,7 +108,7 @@ fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 	
 	// todo: clean this up later
 	if (0 < intersection.t) && (intersection.t < 1e-14) {
-		
+		prinln("yes we got this case")
 	} else {
 		return false
 	}
