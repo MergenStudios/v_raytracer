@@ -1,3 +1,6 @@
 Raytracer written in V for my Facharbeit
 
-Nothing else to add here for now
+# Todo
+- [ ] Add Diffuse reflection
+- [ ] Add a second very big sphere (like in "Raytracing in one weekend")
+- [ ] Add a plane
