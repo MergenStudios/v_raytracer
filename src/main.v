@@ -1,7 +1,13 @@
 module main
 
+import os
+
 fn main() {
-	w, h := 1600, 1000
+	// parse w and h from command line
+	w_parsed := os.args[1].int()
+	h_parsed := os.args[2].int()
+
+	w, h := w_parsed, h_parsed
 	bg_color := ColorInt{0, 0, 0}
 
 	mut s := init_scene(bg_color)
