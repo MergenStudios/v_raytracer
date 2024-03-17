@@ -9,15 +9,6 @@ struct Optics {
 interface HittableObject {
 	optics Optics
 
-// 	get_intersection(r Ray) (bool, Intersection)
-
 	check_hit(r Ray) (bool, Intersection)
 	surface_normal(v Vec) Vec // todo: remove this
 }
-
-
-// get_intersection
-	// this returns the intersections between a ray and an object
-	//
-// check_intersection
-	// this checks if there are intersections between a ray and an object

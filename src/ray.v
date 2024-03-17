@@ -1,19 +1,11 @@
 module main
 
-// intersection struct
 struct Intersection {
 	t f64
 	intersection_point Vec
 	surface_normal Vec
 	solid HittableObject
-
-	// point of intersection
-	// solid (the solid thats being intersected)
-	// the surface normal of the intersection
-	// 
-
 }
-
 
 struct Ray {
 	origin Vec
@@ -49,11 +41,3 @@ fn (r Ray) nearest_intersection(hittable_objects []HittableObject) (bool, Inters
 		return false, Intersection{}
 	}
 }
-
-// nearest_intersect
-// fn (r Ray) nearest_intersect(hittable_objects []HittableObjects) Vec {
-//		go thought all hittable objects
-//		check if the ray intersects with the object
-//		update the closest intersection as needed
-//		return the intersection point
-// }

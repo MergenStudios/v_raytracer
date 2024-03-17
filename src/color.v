@@ -13,6 +13,3 @@ struct ColorFloat {
 		g f64
 		b f64
 }
-
-// Implement for ColorFloat:
-// +, *, scale
