@@ -9,6 +9,6 @@ struct Optics {
 interface HittableObject {
 	optics Optics
 
-	check_hit(r Ray) (bool, Intersection)
+	check_hit(r Ray) ?Intersection // * change here
 	surface_normal(v Vec) Vec // todo: remove this
 }

@@ -16,28 +16,34 @@ fn (r Ray) at(t f64) Vec {
 	return r.origin + r.direction.scale(t)
 }
 
-fn (r Ray) nearest_intersection(hittable_objects []HittableObject) (bool, Intersection) {
+fn (r Ray) nearest_intersection(hittable_objects []HittableObject) ?Intersection { // * change here
 	mut nearest_intersection := Intersection{}
 	mut intersected := false
 	
 	for obj in hittable_objects {
-		check, intersection := obj.check_hit(r)
-
-		if check {
-			if intersected == false { // ik this is stupid shut up
-				nearest_intersection = intersection
-				intersected = true
-			} else if intersected == true { // same thing as above
-				if intersection.t < nearest_intersection.t {
-					nearest_intersection = intersection
-				}
-			}
+		// check, intersection := obj.check_hit(r)
+		intersection := obj.check_hit(r) or {
+			continue // this just skips ahead, beacuse we did not find an intersection with this object
 		}
+
+		// continue the normal code
+		if !intersected {
+			intersected = true
+			nearest_intersection = intersection
+			continue
+		}
+
+		if intersection.t < nearest_intersection.t {
+			intersected = true
+			nearest_intersection = intersection
+		}
+		
 	}
 
 	if intersected {
-		return true, nearest_intersection
+		return nearest_intersection // * change here
 	} else {
-		return false, Intersection{}
+		return none // * change here
 	}
 }
+

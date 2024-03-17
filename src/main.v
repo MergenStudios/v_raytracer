@@ -1,7 +1,7 @@
 module main
 
 fn main() {
-	w, h := 400, 250
+	w, h := 1600, 1000
 	bg_color := ColorInt{0, 0, 0}
 
 	mut s := init_scene(bg_color)

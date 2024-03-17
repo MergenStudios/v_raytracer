@@ -9,8 +9,7 @@ struct Sphere {
 	optics Optics
 }
  
-fn (s Sphere) check_hit(r Ray) (bool, Intersection) {
-
+fn (s Sphere) check_hit(r Ray) ?Intersection {
 	// https://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection
 	a := r.direction.dot(r.direction)
 	b := r.direction.dot(r.origin - s.center) * 2
@@ -20,7 +19,7 @@ fn (s Sphere) check_hit(r Ray) (bool, Intersection) {
 
 	// below 0 - no intersections
 	if discriminant < 0 {
-		return false, Intersection{}
+		return none 
 	}
 
 	// exactly 0 - one intersection
@@ -28,11 +27,11 @@ fn (s Sphere) check_hit(r Ray) (bool, Intersection) {
 		t := (-b / (2*a))
 
 		if t < 0 {
-			return false, Intersection{}
+			return none 
 		} else {
 			intersection_point := r.at(t)
 
-			return true, Intersection {
+			return Intersection{ 
 				t: t
 				intersection_point: intersection_point,
 				surface_normal: s.surface_normal(intersection_point) // todo: calculate this in this function directly
@@ -47,7 +46,7 @@ fn (s Sphere) check_hit(r Ray) (bool, Intersection) {
 
 		// edgecase when all t are below 0
 		if t_vals.all(it < 0) {
-			return false, Intersection{}
+			return none 
 		}
 
 		
@@ -57,7 +56,7 @@ fn (s Sphere) check_hit(r Ray) (bool, Intersection) {
 
 
 		if t_vals == [] {
-			return false, Intersection{}
+			return none 
 		}
 
 
@@ -67,7 +66,7 @@ fn (s Sphere) check_hit(r Ray) (bool, Intersection) {
 
 		intersection_point := r.at(lowest_t)
 
-		return true, Intersection {
+		return Intersection { 
 			t: lowest_t
 			intersection_point: intersection_point,
 			surface_normal: s.surface_normal(intersection_point) // todo: calculate this in this function directly
@@ -77,7 +76,7 @@ fn (s Sphere) check_hit(r Ray) (bool, Intersection) {
 	}
 	// something went terribly wrong
 	println("What the actuall fuck. discriminant is neither over 0, 0, or below 0. idk either")
-	return false, Intersection{}
+	return none 
 }
 
 // todo: remove this 

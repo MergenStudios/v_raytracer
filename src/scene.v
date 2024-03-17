@@ -98,44 +98,33 @@ fn (mut s Scene) render(path string, w int, h int) !{
 
 fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 	r := Ray{a, (b - a).unit()}
-	check, intersection := r.nearest_intersection(s.hittable_objects) // this could be more efficient if I dont calculate the intersection
+	// check, intersection := r.nearest_intersection(s.hittable_objects) // * change here
+	intersection := r.nearest_intersection(s.hittable_objects) or {
+		return true // we got no intersection, we have a line of sight
+	}
 
-	if check && intersection.t >= (b - a).length() {
-		return true
-	} else if !check {
+	// rare edgecase with intersection but not between a and b
+	if intersection.t >= (b - a).length() { // * change here
 		return true
 	}
 	
-	// todo: clean this up later
-	if (0 < intersection.t) && (intersection.t < 1e-14) {
-		prinln("yes we got this case")
-	} else {
-		return false
-	}
+	// we got a valid intersection, so we do not have a line of sight
 	return false
-
 }
 
 
 fn (s Scene) trace_ray(r Ray) ColorInt {
-	check, intersection := r.nearest_intersection(s.hittable_objects)
-
-	if check {
-		
-		// call calculate_lighting
-		// println(intersection)
-		
-
-		if s.has_line_of_sight(intersection.intersection_point, s.light_sources[0].pos) {
-			// line of sight - green
-			return ColorInt{0, 255, 0}
-		} else {
-			// no line of sight - red
-			return ColorInt{255, 0, 0}
-		}
-		
-	} else { // nothing was hit, ray is background color
+	intersection := r.nearest_intersection(s.hittable_objects) or {
+		// we got no intersection, so we can make the ray have the bg color
 		return s.bg_color
+	}
+
+	if s.has_line_of_sight(intersection.intersection_point, s.light_sources[0].pos) {
+		// line of sight - green
+		return ColorInt{0, 255, 0}
+	} else {
+		// no line of sight - red
+		return ColorInt{255, 0, 0}
 	}
 }
 
