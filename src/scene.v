@@ -1,6 +1,7 @@
 module main
 
 import os
+import math
 
 struct Camera {
 	mut:
@@ -118,14 +119,42 @@ fn (s Scene) trace_ray(r Ray) ColorInt {
 		// we got no intersection, so we can make the ray have the bg color
 		return s.bg_color
 	}
+	
+	// convert surface normal to color
+	// println(intersection.normal)
 
-	if s.has_line_of_sight(intersection.intersection_point, s.light_sources[0].pos) {
-		// line of sight - green
+	matte_color := s.calculate_matte(intersection).to_int()
+
+	
+	// shade green/red wether or not light can hit a point on the sphere
+/*
+	mut has := false
+
+	if has {
 		return ColorInt{0, 255, 0}
 	} else {
-		// no line of sight - red
 		return ColorInt{255, 0, 0}
 	}
+	*/
+	return matte_color
+}
+
+fn (s Scene) calculate_matte(i Intersection) ColorFloat {
+	source := s.light_sources[0]
+
+	if s.has_line_of_sight(i.intersection_point, source.pos) {
+		obj_optics := i.solid.optics
+
+		direction_to_source := (source.pos - i.intersection_point)
+		incidence := i.normal.dot(direction_to_source.unit())
+
+		scaled_color := obj_optics.matte_color.scale(incidence)
+
+		// return scaled_color
+		return scaled_color
+	}
+
+	return ColorFloat{0, 0, 0}
 }
 
 fn (mut s Scene) add_object(obj HittableObject) {

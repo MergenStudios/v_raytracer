@@ -3,7 +3,7 @@ module main
 struct Intersection {
 	t f64
 	intersection_point Vec
-	surface_normal Vec
+	normal Vec
 	solid HittableObject
 }
 

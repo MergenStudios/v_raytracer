@@ -14,17 +14,17 @@ fn main() {
 
 	// objects
 	my_sphere := Sphere{
-		center: Vec{0, 0, 3},
+		center: Vec{0, 0, 1},
 		radius: .5,
 		optics: Optics{
-			matte_color: ColorFloat{1.0, 1.0, 1.0}
+			matte_color: ColorFloat{0.56, 0.0, 1.0}
 		}
 	}
 	s.add_object(my_sphere)
 
 	my_second_sphere := Sphere{
-		center: Vec{2, 0, 3},
-		radius: .5,
+		center: Vec{0, -200.5, -1},
+		radius: 200,
 		optics: Optics{
 			matte_color: ColorFloat{1.0, 1.0, 1.0}
 		}
@@ -34,7 +34,7 @@ fn main() {
 	
 	// light source
 	my_light_source := LightSource{
-		pos: Vec{-5, 2, 3}
+		pos: Vec{2, 0, 0}
 	}
 	s.add_light_source(my_light_source)
 	

@@ -34,7 +34,7 @@ fn (s Sphere) check_hit(r Ray) ?Intersection {
 			return Intersection{ 
 				t: t
 				intersection_point: intersection_point,
-				surface_normal: s.surface_normal(intersection_point) // todo: calculate this in this function directly
+				normal: s.normal(intersection_point) // todo: calculate this in this function directly
 				solid: s
 			}
 		}
@@ -69,7 +69,7 @@ fn (s Sphere) check_hit(r Ray) ?Intersection {
 		return Intersection { 
 			t: lowest_t
 			intersection_point: intersection_point,
-			surface_normal: s.surface_normal(intersection_point) // todo: calculate this in this function directly
+			normal: s.normal(intersection_point) // todo: calculate this in this function directly
 			solid: s
 		}
 		
@@ -80,7 +80,7 @@ fn (s Sphere) check_hit(r Ray) ?Intersection {
 }
 
 // todo: remove this 
-fn (s Sphere) surface_normal(v Vec) Vec {
+fn (s Sphere) normal(v Vec) Vec {
 	normal_vec := (v - s.center).unit()
 	return normal_vec
 }
