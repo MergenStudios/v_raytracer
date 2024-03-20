@@ -15,7 +15,8 @@ struct Camera {
 }
 
 struct Scene {
-	bg_color ColorInt
+	bg_color ColorFloat
+	depth int
 	mut:
 		cam Camera
 		hittable_objects []HittableObject
@@ -23,7 +24,7 @@ struct Scene {
 } 
 
 
-fn init_scene(bg_color ColorInt) Scene {
+fn init_scene(bg_color ColorFloat) Scene {
 	// sane defaults
 	cam := Camera{
 		pos: Vec{0, 0, 0},
@@ -33,6 +34,7 @@ fn init_scene(bg_color ColorInt) Scene {
 	
 	return Scene {
 		bg_color: bg_color
+		depth: 10
 		cam: cam
 		hittable_objects: []HittableObject{}
 	}
@@ -88,7 +90,8 @@ fn (mut s Scene) render(path string, w int, h int) !{
 			r := Ray{s.cam.pos, pixel_center.unit()} 
 
 			// trace the ray through the scene 
-			pixel := s.trace_ray(r)
+			pixel := s.trace_ray(r, s.depth).to_int()
+
 
 			f.write_string("${pixel.r} ${pixel.g} ${pixel.b}\n")!
 		}
@@ -114,18 +117,33 @@ fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 }
 
 
-fn (s Scene) trace_ray(r Ray) ColorInt {
+fn (s Scene) trace_ray(r Ray, depth int) ColorFloat {
 	intersection := r.nearest_intersection(s.hittable_objects) or {
 		// we got no intersection, so we can make the ray have the bg color
-		return s.bg_color
+		// return s.bg_color
+
+		// return lerped color (still no Idea how that works)
+		a := .5 * (r.direction.unit().x + 1)
+		return ColorFloat{1, 1, 1}.scale(1 - a) + ColorFloat{0.5, 0.7, 1.0}.scale(a)
 	}
 	
-	// convert surface normal to color
-	// println(intersection.normal)
+	// calculate color using true lambertian reflection ()
 
-	matte_color := s.calculate_matte(intersection).to_int()
+	// if intersection, get color of whatever was intersected 
+	obj_color := intersection.solid.optics.matte_color
 
-	
+	// construct a new reflected ray
+	direction := intersection.normal + rand_on_hemisphere(intersection.normal)
+	child_ray := Ray{intersection.intersection_point, direction}
+
+	// recursively calculate trace_ray to get the color
+	calculated_color := s.trace_ray(child_ray, depth - 1).scale(0.5)
+
+	return calculated_color
+	// println(calculated_color)
+
+
+
 	// shade green/red wether or not light can hit a point on the sphere
 /*
 	mut has := false
@@ -136,8 +154,11 @@ fn (s Scene) trace_ray(r Ray) ColorInt {
 		return ColorInt{255, 0, 0}
 	}
 	*/
-	return matte_color
+	
+	// return ColorFloat{255, 0, 0}
 }
+
+// ray color 
 
 fn (s Scene) calculate_matte(i Intersection) ColorFloat {
 	source := s.light_sources[0]

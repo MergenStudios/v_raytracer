@@ -25,6 +25,14 @@ fn (c ColorFloat) scale(t f64) ColorFloat {
 	}
 }
 
+fn (a ColorFloat) + (b ColorFloat) ColorFloat {
+	return ColorFloat {
+		r: a.r + b.r
+		g: a.g + b.g
+		b: a.b + b.b
+	}
+}
+
 // functions for converting between the two structs
 fn (c ColorInt) to_float() ColorFloat {
 	return ColorFloat{

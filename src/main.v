@@ -8,22 +8,22 @@ fn main() {
 	h_parsed := os.args[2].int()
 
 	w, h := w_parsed, h_parsed
-	bg_color := ColorInt{0, 0, 0}
+	bg_color := ColorFloat{1, 1, 1} // stole that blue from "raytracing in one weekend"
 
 	mut s := init_scene(bg_color)
 
 	// objects
 	my_sphere := Sphere{
-		center: Vec{0, 0, 1},
+		center: Vec{0, 0, 1.5},
 		radius: .5,
 		optics: Optics{
-			matte_color: ColorFloat{0.56, 0.0, 1.0}
+			matte_color: ColorFloat{0.0, 0.0, 0.0}
 		}
 	}
 	s.add_object(my_sphere)
 
 	my_second_sphere := Sphere{
-		center: Vec{0, -200.5, -1},
+		center: Vec{0, -200.5, 1.5},
 		radius: 200,
 		optics: Optics{
 			matte_color: ColorFloat{1.0, 1.0, 1.0}

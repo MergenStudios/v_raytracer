@@ -37,7 +37,6 @@ fn (r Ray) nearest_intersection(hittable_objects []HittableObject) ?Intersection
 			intersected = true
 			nearest_intersection = intersection
 		}
-		
 	}
 
 	if intersected {

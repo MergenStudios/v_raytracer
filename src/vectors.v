@@ -1,6 +1,7 @@
 module main
 
 import math
+import rand
 
 struct Vec {
 	x f64
@@ -47,3 +48,27 @@ fn (v Vec) cross(u Vec) Vec {
 fn (v Vec) unit() Vec {
 	return v.scale(1/v.length())
 }
+
+// generate a random unit vector (usefull for lambertian reflection)
+fn rand_unit() Vec {
+	return Vec{
+		x: rand_f64(-1, 1)
+		y: rand_f64(-1, 1)
+		z: rand_f64(-1, 1)
+	}
+}
+
+fn rand_on_hemisphere(n Vec) Vec {
+	on_sphere := rand_unit()	
+
+	if (on_sphere.dot(n)) > 0.0 {
+		return on_sphere
+	} else {
+		return on_sphere.scale(-1)
+	}
+}
+
+
+
+
+
