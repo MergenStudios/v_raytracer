@@ -8,7 +8,7 @@ fn main() {
 	h_parsed := os.args[2].int()
 
 	w, h := w_parsed, h_parsed
-	bg_color := ColorFloat{1, 1, 1} // stole that blue from "raytracing in one weekend"
+	bg_color := ColorInt{159, 198, 255}.to_float() // stole that blue from "raytracing in one weekend"
 
 	mut s := init_scene(bg_color)
 

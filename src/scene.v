@@ -2,6 +2,7 @@ module main
 
 import os
 import math
+import rand
 
 struct Camera {
 	mut:
@@ -17,11 +18,12 @@ struct Camera {
 struct Scene {
 	bg_color ColorFloat
 	depth int
+	samples int
 	mut:
 		cam Camera
 		hittable_objects []HittableObject
 		light_sources []LightSource
-} 
+}
 
 
 fn init_scene(bg_color ColorFloat) Scene {
@@ -35,6 +37,7 @@ fn init_scene(bg_color ColorFloat) Scene {
 	return Scene {
 		bg_color: bg_color
 		depth: 10
+		samples: 50
 		cam: cam
 		hittable_objects: []HittableObject{}
 	}
@@ -86,18 +89,49 @@ fn (mut s Scene) render(path string, w int, h int) !{
 		print("${y+1}/${h} lines")
 
 		for x in 0 .. w {
-			pixel_center := s.cam.top_left_pixel + Vec{s.cam.pixel_delta_h, 0, 0}.scale(x) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(y)
-			r := Ray{s.cam.pos, pixel_center.unit()} 
+			// make this have antialiasing
+			mut color_sampled := ColorFloat{0, 0, 0}
+
+			for _ in 0..s.samples {
+				// pixel_center := s.cam.top_left_pixel + Vec{s.cam.pixel_delta_h, 0, 0}.scale(x) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(y)
+				// r := Ray{s.cam.pos, pixel_center.unit()} 
+				r := s.get_ray(x, y)
+
+				// println(r)
+
+				pixel := s.trace_ray(r, s.depth)
+
+
+
+				color_sampled += pixel
+			}
 
 			// trace the ray through the scene 
-			pixel := s.trace_ray(r, s.depth).to_int()
 
-
-			f.write_string("${pixel.r} ${pixel.g} ${pixel.b}\n")!
+			// take the average
+			scale := 1.0 / f64(s.samples)
+			color_sampled = color_sampled.scale(scale)
+			color_sampled_int := color_sampled.to_int()
+			// println("${scale}, ${color_sampled}")
+			
+			f.write_string("${color_sampled_int.r} ${color_sampled_int.g} ${color_sampled_int.b}\n")!
 		}
 	}
 
 	f.close()
+}
+
+fn (s Scene) get_ray(x, y int) Ray {
+	pixel_center := s.cam.top_left_pixel + Vec{s.cam.pixel_delta_h, 0, 0}.scale(x) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(y)
+
+	py := -.5 + rand_f64(0, 1)
+	px := -.5 + rand_f64(0, 1)
+
+	pixel_sample := pixel_center + Vec{s.cam.pixel_delta_h, 0, 0}.scale(px) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(py)
+
+	r := Ray{s.cam.pos, pixel_sample.unit()} // todo: does this HAVE to be a unit vector?
+
+	return r
 }
 
 fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
@@ -119,43 +153,25 @@ fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 
 fn (s Scene) trace_ray(r Ray, depth int) ColorFloat {
 	intersection := r.nearest_intersection(s.hittable_objects) or {
-		// we got no intersection, so we can make the ray have the bg color
-		// return s.bg_color
-
 		// return lerped color (still no Idea how that works)
-		a := .5 * (r.direction.unit().x + 1)
+		a := .5 * (r.direction.unit().y + 1)
 		return ColorFloat{1, 1, 1}.scale(1 - a) + ColorFloat{0.5, 0.7, 1.0}.scale(a)
 	}
 	
+	// respect recursion depth
+	if depth <= 0 {
+		return ColorFloat{0, 0, 0}
+	}
+
 	// calculate color using true lambertian reflection ()
-
-	// if intersection, get color of whatever was intersected 
-	obj_color := intersection.solid.optics.matte_color
-
 	// construct a new reflected ray
 	direction := intersection.normal + rand_on_hemisphere(intersection.normal)
 	child_ray := Ray{intersection.intersection_point, direction}
 
 	// recursively calculate trace_ray to get the color
-	calculated_color := s.trace_ray(child_ray, depth - 1).scale(0.5)
+	calculated_color := s.trace_ray(child_ray, depth - 1).scale(.5)
 
 	return calculated_color
-	// println(calculated_color)
-
-
-
-	// shade green/red wether or not light can hit a point on the sphere
-/*
-	mut has := false
-
-	if has {
-		return ColorInt{0, 255, 0}
-	} else {
-		return ColorInt{255, 0, 0}
-	}
-	*/
-	
-	// return ColorFloat{255, 0, 0}
 }
 
 // ray color 

@@ -36,9 +36,9 @@ fn (a ColorFloat) + (b ColorFloat) ColorFloat {
 // functions for converting between the two structs
 fn (c ColorInt) to_float() ColorFloat {
 	return ColorFloat{
-		r: 255 / c.r
-		g: 255 / c.g
-		b: 255 / c.b
+		r: f64(c.r) / 255.0
+		g: f64(c.g) / 255.0
+		b: f64(c.b) / 255.0
 	}
 }
 
