@@ -37,7 +37,7 @@ fn init_scene(bg_color ColorFloat) Scene {
 	return Scene {
 		bg_color: bg_color
 		depth: 10
-		samples: 50
+		samples: 100
 		cam: cam
 		hittable_objects: []HittableObject{}
 	}
@@ -89,7 +89,6 @@ fn (mut s Scene) render(path string, w int, h int) !{
 		print("${y+1}/${h} lines")
 
 		for x in 0 .. w {
-			// make this have antialiasing
 			mut color_sampled := ColorFloat{0, 0, 0}
 
 			for _ in 0..s.samples {
@@ -134,6 +133,7 @@ fn (s Scene) get_ray(x, y int) Ray {
 	return r
 }
 
+
 fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 	r := Ray{a, (b - a).unit()}
 	// check, intersection := r.nearest_intersection(s.hittable_objects) // * change here
@@ -151,48 +151,37 @@ fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 }
 
 
+// ray color 
+
+// this traces a ray and returns its color. It takes ambient and direct lighting into account
 fn (s Scene) trace_ray(r Ray, depth int) ColorFloat {
+	// if the ray doesnt intersect anything, its color is the background color
 	intersection := r.nearest_intersection(s.hittable_objects) or {
-		// return lerped color (still no Idea how that works)
-		a := .5 * (r.direction.unit().y + 1)
-		return ColorFloat{1, 1, 1}.scale(1 - a) + ColorFloat{0.5, 0.7, 1.0}.scale(a)
+		return s.bg_color
 	}
-	
-	// respect recursion depth
+
+	// we have exceeded the recursion depth, no more light is gathered
 	if depth <= 0 {
 		return ColorFloat{0, 0, 0}
 	}
 
-	// calculate color using true lambertian reflection ()
-	// construct a new reflected ray
-	direction := intersection.normal + rand_on_hemisphere(intersection.normal)
-	child_ray := Ray{intersection.intersection_point, direction}
+	// the ray hit something, we now have to determine its color
 
-	// recursively calculate trace_ray to get the color
-	calculated_color := s.trace_ray(child_ray, depth - 1).scale(.5)
+	// calculate the contributeion of direct lighting
+	direct := s.calculate_direct(intersection)
 
-	return calculated_color
-}
+	// calculate the contribution of ambient lighting
+	ambient := s.calculate_ambient(intersection, depth)
 
-// ray color 
-
-fn (s Scene) calculate_matte(i Intersection) ColorFloat {
-	source := s.light_sources[0]
-
-	if s.has_line_of_sight(i.intersection_point, source.pos) {
-		obj_optics := i.solid.optics
-
-		direction_to_source := (source.pos - i.intersection_point)
-		incidence := i.normal.dot(direction_to_source.unit())
-
-		scaled_color := obj_optics.matte_color.scale(incidence)
-
-		// return scaled_color
-		return scaled_color
+	// add them up, bring between 0 and 1
+	
+	return ColorFloat{
+		r: math.min(1.0, (direct.r + ambient.r))
+		g: math.min(1.0, (direct.g + ambient.g))
+		b: math.min(1.0, (direct.b + ambient.b))
 	}
-
-	return ColorFloat{0, 0, 0}
 }
+
 
 fn (mut s Scene) add_object(obj HittableObject) {
 	s.hittable_objects << obj
