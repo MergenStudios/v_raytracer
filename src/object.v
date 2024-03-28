@@ -10,5 +10,5 @@ interface HittableObject {
 	optics Optics
 
 	check_hit(r Ray) ?Intersection // * change here
-	normal(v Vec) Vec // todo: remove this
+	// normal(v Vec) Vec // todo: remove this
 }

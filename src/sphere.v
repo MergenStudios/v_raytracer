@@ -8,7 +8,7 @@ struct Sphere {
 	radius f64
 	optics Optics
 }
- 
+
 fn (s Sphere) check_hit(r Ray) ?Intersection {
 	// https://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection
 	a := r.direction.dot(r.direction)

@@ -37,7 +37,7 @@ fn init_scene(bg_color ColorFloat) Scene {
 	return Scene {
 		bg_color: bg_color
 		depth: 10
-		samples: 100
+		samples: 50
 		cam: cam
 		hittable_objects: []HittableObject{}
 	}
@@ -157,9 +157,12 @@ fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 fn (s Scene) trace_ray(r Ray, depth int) ColorFloat {
 	// if the ray doesnt intersect anything, its color is the background color
 	intersection := r.nearest_intersection(s.hittable_objects) or {
-		return s.bg_color
-	}
+		// return s.bg_color
+		a := .5 * (r.direction.unit().y + 1)
+		return ColorFloat{0.5, 0.7, 1.0}.scale(1 - a) + ColorFloat{1.0, 1.0, 1.0}.scale(a)
 
+	}
+	 
 	// we have exceeded the recursion depth, no more light is gathered
 	if depth <= 0 {
 		return ColorFloat{0, 0, 0}
