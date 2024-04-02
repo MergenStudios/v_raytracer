@@ -26,7 +26,7 @@ struct Scene {
 }
 
 
-fn init_scene(bg_color ColorFloat) Scene {
+fn init_scene(bg_color ColorFloat, samples int) Scene {
 	// sane defaults
 	cam := Camera{
 		pos: Vec{0, 0, 0},
@@ -37,10 +37,18 @@ fn init_scene(bg_color ColorFloat) Scene {
 	return Scene {
 		bg_color: bg_color
 		depth: 10
-		samples: 50
+		samples: 10
 		cam: cam
 		hittable_objects: []HittableObject{}
 	}
+}
+
+fn (mut s Scene) add_object(obj HittableObject) {
+	s.hittable_objects << obj
+}
+
+fn (mut s Scene) add_light_source(source LightSource) {
+	s.light_sources << source
 }
 
 fn setup_cam(w int, h int) Camera {
@@ -75,50 +83,6 @@ fn setup_cam(w int, h int) Camera {
 	}
 }
 
-fn (mut s Scene) render(path string, w int, h int) !{
-	s.cam = setup_cam(w, h)
-	
-	mut f := os.open_file(path, "w")!
-	
-	f.write_string("P3\n${w} ${h}\n${255}\n")!
-
-	// write the ppm file
-	for y in 0 .. h {
-		// progress bar
-		print("\r")
-		print("${y+1}/${h} lines")
-
-		for x in 0 .. w {
-			mut color_sampled := ColorFloat{0, 0, 0}
-
-			for _ in 0..s.samples {
-				// pixel_center := s.cam.top_left_pixel + Vec{s.cam.pixel_delta_h, 0, 0}.scale(x) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(y)
-				// r := Ray{s.cam.pos, pixel_center.unit()} 
-				r := s.get_ray(x, y)
-
-				// println(r)
-
-				pixel := s.trace_ray(r, s.depth)
-
-
-
-				color_sampled += pixel
-			}
-
-			// trace the ray through the scene 
-
-			// take the average
-			scale := 1.0 / f64(s.samples)
-			color_sampled = color_sampled.scale(scale)
-			color_sampled_int := color_sampled.to_int()
-			// println("${scale}, ${color_sampled}")
-			
-			f.write_string("${color_sampled_int.r} ${color_sampled_int.g} ${color_sampled_int.b}\n")!
-		}
-	}
-
-	f.close()
-}
 
 fn (s Scene) get_ray(x, y int) Ray {
 	pixel_center := s.cam.top_left_pixel + Vec{s.cam.pixel_delta_h, 0, 0}.scale(x) + Vec{0, -s.cam.pixel_delta_v, 0}.scale(y)
@@ -150,8 +114,6 @@ fn (s Scene) has_line_of_sight(a Vec, b Vec) (bool) {
 	return false
 }
 
-
-// ray color 
 
 // this traces a ray and returns its color. It takes ambient and direct lighting into account
 fn (s Scene) trace_ray(r Ray, depth int) ColorFloat {
@@ -185,11 +147,39 @@ fn (s Scene) trace_ray(r Ray, depth int) ColorFloat {
 	}
 }
 
+fn (mut s Scene) render(path string, w int, h int) !{
+	s.cam = setup_cam(w, h)
+	
+	mut f := os.open_file(path, "w")!
+	
+	f.write_string("P3\n${w} ${h}\n${255}\n")!
 
-fn (mut s Scene) add_object(obj HittableObject) {
-	s.hittable_objects << obj
-}
+	// write the ppm file
+	for y in 0 .. h {
+		// progress bar
+		print("\r")
+		print("${y+1}/${h} lines")
 
-fn (mut s Scene) add_light_source(source LightSource) {
-	s.light_sources << source
+		for x in 0 .. w {
+			mut color_sampled := ColorFloat{0, 0, 0}
+
+			for _ in 0..s.samples {
+				r := s.get_ray(x, y)
+
+				pixel := s.trace_ray(r, s.depth)
+
+				color_sampled += pixel
+			}
+
+			// take the average
+			scale := 1.0 / f64(s.samples)
+			color_sampled = color_sampled.scale(scale)
+			color_sampled_int := color_sampled.to_int()
+			// println("${scale}, ${color_sampled}")
+			
+			f.write_string("${color_sampled_int.r} ${color_sampled_int.g} ${color_sampled_int.b}\n")!
+		}
+	}
+
+	f.close()
 }

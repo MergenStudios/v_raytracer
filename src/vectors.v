@@ -1,7 +1,6 @@
 module main
 
 import math
-import rand
 
 struct Vec {
 	x f64
@@ -50,6 +49,7 @@ fn (v Vec) unit() Vec {
 }
 
 // generate a random unit vector (usefull for lambertian reflection)
+// plot twist: this is not acctually a unit vector. I only noticed that now. I am an idiot sometimes...
 fn rand_unit() Vec {
 	return Vec{
 		x: rand_f64(-1, 1)
@@ -67,8 +67,3 @@ fn rand_on_hemisphere(n Vec) Vec {
 		return on_sphere.scale(-1)
 	}
 }
-
-
-
-
-

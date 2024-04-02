@@ -39,16 +39,16 @@ fn (tr Triangle) check_hit(r Ray) ?Intersection {
 	// check if the ray intersects the plane the quad lies in
 	denominator := tr.normal.dot(r.direction)
 
-	if ((-1e-07 < denominator) && (denominator < 1e-07)) {
-		println("the denominator is 0, and therefore the ray does not intersect the plane (denom: ${denominator})")
+	// check if the denominator is 0 (we cant divide by 0)
+	if (-1e-07 < denominator) && (denominator < 1e-07) {
 		return none
-	} 
+	}
 	
 	// we are intersecting the plane, now calculate t
 	t := (tr.d - tr.normal.dot(r.origin)) / denominator
 
 	// toleranzbereich
-	if (t < 1e-07) {
+	if t < 1e-07 {
 		// println("negative t, not intersecting the plane, t: ${t}")
 		return none
 	}
@@ -76,105 +76,26 @@ fn (tr Triangle) check_hit(r Ray) ?Intersection {
 
 	
 	if (w1 >= 0) && (w2 >= 0) && ((w1 + w2) <= 1) && eq_3_check {
-		// println("w1: ${w1}, w2: ${w2}, Pz: ${point.z}, math: ${}")
-		
+		normal := tr.get_correct_normal(r.direction)
+
 		return Intersection {
 			t: t
 			intersection_point: point
-			normal: tr.normal
+			normal: normal
 			solid: tr
 		}
 	} else {
 		return none
 	}
 
-
-
-
-	/*
-	// https://www.youtube.com/watch?v=HYAgJN3x4GA
-	// calculate if the point is acctually inside the triangle
-	// P (point) - the point on the plane
-	// A, B, C (tr.a, tr.b, tr.c) - the points defining the plane
-
-	// calculate w1 and w2 from the first two equations (this is a mess, but it makes sense trust me)
-	// w1 := (() + () - ()) / 
-	w1 := 
-		((tr.a.x*(tr.c.y - tr.a.y)) + ((point.y - tr.a.y)*(tr.c.x - tr.a.x)) - (point.x*(tr.c.y - tr.a.y))) / 
-		((tr.b.y - tr.a.y)*(tr.c.y - tr.a.x) - (tr.b.x - tr.a.x)*(tr.c.x - tr.a.y))
-
-	println("up: ${((tr.a.x*(tr.c.y - tr.a.y)) + ((point.y - tr.a.y)*(tr.c.x - tr.a.x)) - (point.x*(tr.c.y - tr.a.y)))}")
-	println("bottom: ${((tr.b.y - tr.a.y)*(tr.c.y - tr.a.x) - (tr.b.x - tr.a.x)*(tr.c.x - tr.a.y))}")
-
-	if (-1e-07 < w1) && (w1 < 1e-07) {
-		// println("hit for TOLERANZBEREICH!!!")
-	} else {
-		println("weeeee, w1: ${w1}")
-	}*/
-
-
-
-	/*
-	// calculate t
-	t := (q.d - q.normal.dot(r.origin)) / (denominator)
-	// println("we got t: ${t}")
-
-	// toleranzbereich of t
-	if  {
-		// println("hit for toleranzbereich")
-		return none
-	}
-
 	return none
+}
 
-	
-	intersect := r.at(t)
-	planar_hitpoint_vec := intersect - q.q
-
-	alpha := q.w.dot(planar_hitpoint_vec.cross(q.v))
-	beta := q.w.dot(q.u.cross(planar_hitpoint_vec))
-
-	alpha_in_range := ((0.0 < alpha) && (alpha < 1.0))
-	beta_in_range := ((0.0 < beta) && (beta < 1.0))
-
-	if (alpha_in_range && beta_in_range) {
-		// println("yes we got it")
-
-		return Intersection {
-			t: t
-			intersection_point: r.at(t)
-			normal: q.normal
-			solid: q
-		}
-
-
+// this functions ensures that the normal of the triangle is always pointing towards the camera
+fn (tr Triangle) get_correct_normal(ray_direction Vec) Vec {
+	if tr.normal.dot(ray_direction) < 0 {
+		return tr.normal
 	} else {
-		return none
-	}*/
-
-
-
-
-
-	// println("apha: ${alpha}, beta: ${beta}")
-
-
-	/*
-	// check toleranzberreich
-	if ((denominator < 1e-07) && (denominator > -1e-07)) {
-		println("denominator is basically 0")	
-		return none
+		return tr.normal.scale(-1)
 	}
-
-	// calculate t
-	t := q.d - (q.normal.dot(r.origin))
-	// println("we got here, t: ${t}")
-	// check toleranzberreich
-	if (t < 1e-07) {
-		return none
-	}
-
-	println("we got here now: ${t}")
-	*/
-	return none
 }
