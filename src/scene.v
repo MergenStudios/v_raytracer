@@ -36,8 +36,8 @@ fn init_scene(bg_color ColorFloat, samples int) Scene {
 	
 	return Scene {
 		bg_color: bg_color
-		depth: 10
-		samples: 10
+		depth: 5
+		samples: samples
 		cam: cam
 		hittable_objects: []HittableObject{}
 	}
@@ -58,7 +58,7 @@ fn setup_cam(w int, h int) Camera {
 	// ratio between w and h
 	aspect_ratio := f64(w) / f64(h)
 
-	focal_length := 1.0
+	focal_length := 10.0
 
 	// viewport_width is viewport_height multiplied by aspect_ratio
 	viewport_height := 2.0
@@ -122,21 +122,33 @@ fn (s Scene) trace_ray(r Ray, depth int) ColorFloat {
 		// return s.bg_color
 		a := .5 * (r.direction.unit().y + 1)
 		return ColorFloat{0.5, 0.7, 1.0}.scale(1 - a) + ColorFloat{1.0, 1.0, 1.0}.scale(a)
-
+		// return ColorFloat{0.0, 0.7, 0.0}
 	}
 	 
 	// we have exceeded the recursion depth, no more light is gathered
 	if depth <= 0 {
-		return ColorFloat{0, 0, 0}
+		return ColorFloat{0.0, 0.0, 0.0}
 	}
 
 	// the ray hit something, we now have to determine its color
 
 	// calculate the contributeion of direct lighting
-	direct := s.calculate_direct(intersection)
+	// direct := s.calculate_direct(intersection)
+ 	direct := ColorFloat{0.0, 0.0, 0.0}
+
+	// if direct_calc != ColorFloat{0, 0, 0} {
+	// 	println("direct: ${s.calculate_direct(intersection)}, intersection: ${intersection}")
+	// }
+	
 
 	// calculate the contribution of ambient lighting
-	ambient := s.calculate_ambient(intersection, depth)
+	// ambient := s.calculate_ambient(intersection, depth)
+
+	// calculate ambient intensity (how much ambient light is reaching this point)
+	ambient_intensity := s.calculate_ambient_intensity(intersection, depth)
+	ambient := s.bg_color.scale(ambient_intensity) * intersection.solid.optics.matte_color
+
+
 
 	// add them up, bring between 0 and 1
 	

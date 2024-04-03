@@ -55,7 +55,7 @@ fn rand_unit() Vec {
 		x: rand_f64(-1, 1)
 		y: rand_f64(-1, 1)
 		z: rand_f64(-1, 1)
-	}
+	}.unit() // now its a unit vector
 }
 
 fn rand_on_hemisphere(n Vec) Vec {
