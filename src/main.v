@@ -18,9 +18,9 @@ fn main() {
 		depth: 10,
 		samples: samples_parsed,
 		cam: Camera{
-			pos: Vec{.2, 0, 0},
+			pos: Vec{0, 0, 0},
 			facing: Vec{0, 0, 1},
-			focal_length: 2.0
+			focal_length: 3.0
 		}
 	}
 
