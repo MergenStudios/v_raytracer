@@ -10,7 +10,6 @@ fn main() {
 	samples_parsed := os.args[3].int()
 
 	w, h := w_parsed, h_parsed
-	// bg_color := ColorInt{156, 196, 255}.to_float() // stole that blue from "raytracing in one weekend"
 	bg_color := ColorFloat{1.0, 1.0, 1.0} // this is ambient light
 
 	mut s := Scene{
@@ -61,23 +60,11 @@ fn main() {
 	}	
 	s.add_object(sphere_front)
 
-	// triangle := make_triangle(
-	// 	Vec{-2, -.5, 21},
-	// 	Vec{1, -.5, 17},
-	// 	Vec{-.5, .16,19},
-	// 	Optics{
-	// 		matte_color: ColorFloat{1.0, 1.0, 0.0}
-	// 	}
-	// )
-	// s.add_object(triangle)
-	
 	// light source
 	my_light_source := LightSource{
 		pos: Vec{0, 0, 0}
 	}
 	s.add_light_source(my_light_source)
 	
-
 	s.render("./out.ppm", w, h)!
-	
 }
