@@ -22,7 +22,3 @@ bin/
 # vweb and database
 *.db
 *.js
-
-# output files
-*.ppm
-*.png
